@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .sliders {
+        margin-bottom: 20px;
+      }
+
+      .observation-table {
+        margin-bottom: 20px;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+
+      #graph-container {
+        text-align: center;
+      }
+
+      #graph {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Dataset Graph</h1>
+      <div class="sliders">
+        <label for="slider">Slider Value:</label>
+        <input type="range" id="slider" min="1" max="5" />
+      </div>
+      <div class="observation-table">
+        <table id="data-table">
+          <tr>
+            <th>Dataset</th>
+            <th>X Axis</th>
+            <th>Y Axis</th>
+          </tr>
+        </table>
+      </div>
+      <div id="graph-container">
+        <canvas id="graph"></canvas>
+      </div>
+    </div>
+    <script>
+      // Initialize the datasets array
+      const datasets = [
+        {
+          label: "Dataset 1",
+          data: [
+            { x: 1, y: 3 },
+            { x: 2, y: 5 },
+            { x: 3, y: 2 },
+            { x: 4, y: 7 },
+            { x: 5, y: 4 },
+          ],
+        },
+        {
+          label: "Dataset 2",
+          data: [
+            { x: 1, y: 4 },
+            { x: 2, y: 2 },
+            { x: 3, y: 6 },
+            { x: 4, y: 3 },
+            { x: 5, y: 1 },
+          ],
+        },
+        {
+          label: "Dataset 3",
+          data: [
+            { x: 1, y: 1 },
+            { x: 2, y: 7 },
+            { x: 3, y: 4 },
+            { x: 4, y: 2 },
+            { x: 5, y: 6 },
+          ],
+        },
+        {
+          label: "Dataset 4",
+          data: [
+            { x: 1, y: 6 },
+            { x: 2, y: 3 },
+            { x: 3, y: 1 },
+            { x: 4, y: 5 },
+            { x: 5, y: 2 },
+          ],
+        },
+        {
+          label: "Dataset 5",
+          data: [
+            { x: 1, y: 2 },
+            { x: 2, y: 6 },
+            { x: 3, y: 3 },
+            { x: 4, y: 4 },
+            { x: 5, y: 5 },
+          ],
+        },
+      ];
+
+      // Get the canvas element
+      const canvas = document.getElementById("graph");
+      const ctx = canvas.getContext("2d");
+
+      // Define the canvas dimensions
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      //update table
+      function updateTable(datasetIndex, xValues, yValues) {
+        const table = document.getElementById("data-table");
+        const tableRow = document.createElement("tr");
+
+        const datasetCell = document.createElement("td");
+        datasetCell.textContent = "Dataset " + datasetIndex;
+        tableRow.appendChild(datasetCell);
+
+        const xCell = document.createElement("td");
+        xCell.textContent = xValues.join(", ");
+        tableRow.appendChild(xCell);
+
+        const yCell = document.createElement("td");
+        yCell.textContent = yValues.join(", ");
+        tableRow.appendChild(yCell);
+
+        table.appendChild(tableRow);
+      }
+      // Get the slider element
+      const slider = document.getElementById("slider");
+
+      // Listen for slider value change
+      slider.addEventListener("input", function () {
+        const sliderValue = parseInt(this.value);
+        const dataset = datasets[sliderValue - 1];
+
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        // Find the minimum and maximum values for X and Y
+        const xValues = dataset.data.map((point) => point.x);
+        const yValues = dataset.data.map((point) => point.y);
+        const minX = Math.min(...xValues);
+        const maxX = Math.max(...xValues);
+        const minY = Math.min(...yValues);
+        const maxY = Math.max(...yValues);
+        updateTable(sliderValue, xValues, yValues);
+        // Calculate the scaling factor for X and Y axes
+        const scaleX = canvasWidth / (maxX - minX + 1);
+        const scaleY = canvasHeight / (maxY - minY + 1);
+
+        // Plot the axes
+        ctx.beginPath();
+        ctx.moveTo(0, scaleY * (maxY + 0.5));
+        ctx.lineTo(canvasWidth, scaleY * (maxY + 0.5));
+        ctx.moveTo(scaleX * (minX - 0.5), 0);
+        ctx.lineTo(scaleX * (minX - 0.5), canvasHeight);
+        ctx.stroke();
+
+        // Plot the dataset graph
+        ctx.beginPath();
+        ctx.strokeStyle = getRandomColor();
+
+        dataset.data.forEach((point) => {
+          const x = scaleX * (point.x - minX + 0.5);
+          const y = canvasHeight - scaleY * (point.y - minY + 0.5);
+          ctx.lineTo(x, y);
+        });
+
+        ctx.stroke();
+      });
+
+      // Generate a random color for each dataset
+      function getRandomColor() {
+        const letters = "0123456789ABCDEF";
+        let color = "#";
+        for (let i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+    </script>
+  </body>
+</html>
